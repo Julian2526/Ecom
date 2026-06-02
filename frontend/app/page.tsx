@@ -10,8 +10,8 @@ type Product = {
   image?: string;
   marca?: string;
   departamento?: string;
-  sabores?: string;  // String con valores separados por coma: "Chocolate, Cítrico, Dulce"
-  tipologia?: string[];  // Array: ["grano", "molido"] o ["molido"]
+  sabores?: string;
+  tipologia?: string[];
 };
 
 type CartItem = Product & {
@@ -34,21 +34,22 @@ export default function Home() {
   const [search, setSearch] = useState('');
   const [sortOption, setSortOption] = useState('random');
 
-  //  ESTADOS PARA FILTROS
   const [selectedDepartamento, setSelectedDepartamento] = useState<string>('');
   const [selectedMarca, setSelectedMarca] = useState<string>('');
   const [selectedSabor, setSelectedSabor] = useState<string>('');
   const [selectedTipologia, setSelectedTipologia] = useState<string>('');
 
-  //  Productos
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://ecom-production-d108.up.railway.app';
+
+  // Productos
   useEffect(() => {
-    fetch('http://localhost:3001/products')
+    fetch(`${API_URL}/products`)
       .then(res => res.json())
       .then(data => setProducts(data))
       .catch(() => setError(true));
   }, []);
 
-  //  Usuario + carrito
+  // Usuario + carrito
   useEffect(() => {
     const savedUser: User = JSON.parse(
       localStorage.getItem('user') || '{}'
@@ -67,7 +68,7 @@ export default function Home() {
     }
   }, []);
 
-  //  Guardar carrito
+  // Guardar carrito
   useEffect(() => {
     if (user?.email) {
       localStorage.setItem(
@@ -77,13 +78,11 @@ export default function Home() {
     }
   }, [cart, user]);
 
-  // 🔥 Función para extraer sabores individuales (separados por coma)
   const getIndividualSabores = (saboresStr?: string): string[] => {
     if (!saboresStr) return [];
     return saboresStr.split(',').map(s => s.trim()).filter(s => s);
   };
 
-  // 🔥 Obtener opciones únicas para filtros
   const getUniqueDepartamentos = () => {
     return [...new Set(products.map(p => p.departamento).filter(Boolean))];
   };
@@ -92,7 +91,6 @@ export default function Home() {
     return [...new Set(products.map(p => p.marca).filter(Boolean))];
   };
 
-  // 🔥 Obtener sabores únicos (de todos los productos, separando por comas)
   const getUniqueSabores = () => {
     const allSabores: string[] = [];
     products.forEach(p => {
@@ -104,7 +102,6 @@ export default function Home() {
     return [...new Set(allSabores)];
   };
 
-  // 🔥 Obtener tipologías únicas (de los arrays)
   const getUniqueTipologias = () => {
     const allTipologias: string[] = [];
     products.forEach(p => {
@@ -120,20 +117,17 @@ export default function Home() {
   const saboresList = getUniqueSabores();
   const tipologiasList = getUniqueTipologias();
 
-  // 🔥 Función para verificar si un producto tiene un sabor específico
   const hasSabor = (product: Product, sabor: string): boolean => {
     if (!product.sabores) return false;
     const saboresArray = getIndividualSabores(product.sabores);
     return saboresArray.includes(sabor);
   };
 
-  // 🔥 Función para verificar si un producto tiene una tipología específica
   const hasTipologia = (product: Product, tipologia: string): boolean => {
     if (!product.tipologia || !Array.isArray(product.tipologia)) return false;
     return product.tipologia.includes(tipologia);
   };
 
-  // 🔍 FILTRO + ORDEN (con todos los filtros)
   const filteredProducts = [...products]
     .filter(p => p.name.toLowerCase().includes(search.toLowerCase()))
     .filter(p => !selectedDepartamento || p.departamento === selectedDepartamento)
@@ -147,7 +141,6 @@ export default function Home() {
       return 0;
     });
 
-  // Restablecer filtros
   const resetFilters = () => {
     setSearch('');
     setSortOption('random');
@@ -166,7 +159,6 @@ export default function Home() {
       minHeight: '100vh'
     }}>
       
-      {/* 🖼️ IMAGEN */}
       <div style={{ 
         margin: '0',
         padding: '0',
@@ -201,10 +193,8 @@ export default function Home() {
         )}
       </div>
 
-      {/* 🔍 BUSCADOR Y CONTENIDO */}
       <div style={{ padding: '20px 30px 80px 30px' }}>
         
-        {/* BUSCADOR */}
         <div style={{ marginBottom: '20px', textAlign: 'center' }}>
           <input
             type="text"
@@ -223,10 +213,8 @@ export default function Home() {
           />
         </div>
 
-        {/* CONTENIDO PRINCIPAL */}
         <div style={{ display: 'flex', gap: '15px' }}>
           
-          {/* SIDEBAR CON FILTROS FUNCIONALES */}
           <div
             style={{
               width: '200px',
@@ -242,7 +230,6 @@ export default function Home() {
           >
             <h3 style={{ marginBottom: '10px', fontFamily: 'inherit' }}>Filtrar por</h3>
             
-            {/* FILTRO DEPARTAMENTOS */}
             <div style={{ marginBottom: '12px' }}>
               <div style={{ fontSize: '13px', fontWeight: '500', color: '#555', marginBottom: '6px' }}>Departamentos</div>
               <select
@@ -264,7 +251,6 @@ export default function Home() {
               </select>
             </div>
             
-            {/* FILTRO MARCA */}
             <div style={{ marginBottom: '12px' }}>
               <div style={{ fontSize: '13px', fontWeight: '500', color: '#555', marginBottom: '6px' }}>Marca</div>
               <select
@@ -286,7 +272,6 @@ export default function Home() {
               </select>
             </div>
             
-            {/* FILTRO SABORES - cada sabor individual */}
             <div style={{ marginBottom: '12px' }}>
               <div style={{ fontSize: '13px', fontWeight: '500', color: '#555', marginBottom: '6px' }}>Sabores</div>
               <select
@@ -308,7 +293,6 @@ export default function Home() {
               </select>
             </div>
             
-            {/* FILTRO TIPOLOGÍA - cada valor del array */}
             <div style={{ marginBottom: '12px' }}>
               <div style={{ fontSize: '13px', fontWeight: '500', color: '#555', marginBottom: '6px' }}>Tipología</div>
               <select
@@ -347,20 +331,11 @@ export default function Home() {
                 cursor: 'pointer',
                 transition: 'all 0.2s',
               }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = '#f0f0f0';
-                e.currentTarget.style.borderColor = '#999';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = '#fff';
-                e.currentTarget.style.borderColor = '#ccc';
-              }}
             >
               Restablecer filtros
             </button>
           </div>
 
-          {/* PRODUCTOS */}
           <div style={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
             <div>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>

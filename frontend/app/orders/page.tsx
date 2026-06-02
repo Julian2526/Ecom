@@ -21,6 +21,8 @@ type Order = {
 export default function OrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);
 
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://ecom-production-d108.up.railway.app';
+
   // 🔑 Generar clave única (mismo método que en Navbar y Checkout)
   const getItemKey = (item: CartItem): string => {
     return `${item._id}-${item.tipologia || 'sin-tipologia'}`;
@@ -42,7 +44,7 @@ export default function OrdersPage() {
 
     if (!user.email) return;
 
-    fetch(`http://localhost:3001/orders/${user.email}`)
+    fetch(`${API_URL}/orders/${user.email}`)
       .then(res => res.json())
       .then(data => setOrders(data))
       .catch(() => console.log('Error cargando pedidos'));

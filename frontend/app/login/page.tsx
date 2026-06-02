@@ -8,6 +8,8 @@ export default function Login() {
   const [password, setPassword] = useState('');
   const router = useRouter();
 
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://ecom-production-d108.up.railway.app';
+
   // 🔥 REGISTRO
   const register = async () => {
     if (!email || !password) {
@@ -15,7 +17,7 @@ export default function Login() {
       return;
     }
 
-    const res = await fetch('http://localhost:3001/users/register', {
+    const res = await fetch(`${API_URL}/users/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password }),
@@ -24,7 +26,7 @@ export default function Login() {
     const data = await res.json();
 
     if (data.error) {
-      alert(data.error); // 🔥 muestra "Usuario ya existe"
+      alert(data.error);
       return;
     }
 
@@ -38,7 +40,7 @@ export default function Login() {
       return;
     }
 
-    const res = await fetch('http://localhost:3001/users/login', {
+    const res = await fetch(`${API_URL}/users/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password }),
@@ -47,16 +49,15 @@ export default function Login() {
     const data = await res.json();
 
     if (data.error) {
-      alert(data.error); // 🔥 "Credenciales incorrectas"
+      alert(data.error);
       return;
     }
 
-    // ✅ guardar usuario
     localStorage.setItem('user', JSON.stringify(data.user));
 
     alert('Login exitoso');
 
-    router.push('/'); // 🔥 redirige al home
+    router.push('/');
   };
 
   return (

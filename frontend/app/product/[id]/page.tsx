@@ -28,10 +28,12 @@ export default function ProductPage() {
   // 🔥 estado tipología
   const [tipoSeleccionado, setTipoSeleccionado] = useState<string>('');
 
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://ecom-production-d108.up.railway.app';
+
   useEffect(() => {
     if (!id) return;
 
-    fetch(`http://localhost:3001/products/${id}`)
+    fetch(`${API_URL}/products/${id}`)
       .then(res => res.json())
       .then(data => {
         setProduct(data);
@@ -42,7 +44,7 @@ export default function ProductPage() {
         }
         
         // Cargar productos relacionados (misma marca)
-        return fetch('http://localhost:3001/products');
+        return fetch(`${API_URL}/products`);
       })
       .then(res => res.json())
       .then(allProducts => {

@@ -7,7 +7,7 @@ type CartItem = {
   name: string;
   price: number;
   quantity: number;
-  tipologia?: string; // 👈 AGREGADO: para distinguir grano/molido
+  tipologia?: string;
 };
 
 type User = {
@@ -18,7 +18,6 @@ export default function CheckoutPage() {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [user, setUser] = useState<User>({});
 
-  // 💳 Datos tarjeta
   const [cardNumber, setCardNumber] = useState('');
   const [name, setName] = useState('');
   const [expiry, setExpiry] = useState('');
@@ -26,12 +25,10 @@ export default function CheckoutPage() {
 
   const [error, setError] = useState('');
 
-  // 🔑 Generar clave única (mismo método que en Navbar)
   const getItemKey = (item: CartItem): string => {
     return `${item._id}-${item.tipologia || 'sin-tipologia'}`;
   };
 
-  // 🧹 Limpiar duplicados al cargar
   const cleanCartDuplicates = (dirtyCart: CartItem[]): CartItem[] => {
     const uniqueMap = new Map<string, CartItem>();
     
@@ -48,7 +45,6 @@ export default function CheckoutPage() {
     return Array.from(uniqueMap.values());
   };
 
-  // 🔌 cargar datos (CORREGIDO con limpieza de duplicados)
   useEffect(() => {
     const savedUser: User = JSON.parse(
       localStorage.getItem('user') || '{}'
@@ -63,11 +59,9 @@ export default function CheckoutPage() {
 
       if (savedCart) {
         const parsedCart = JSON.parse(savedCart);
-        // ✅ Limpiar duplicados al cargar
         const cleanedCart = cleanCartDuplicates(parsedCart);
         setCart(cleanedCart);
         
-        // Si se limpiaron duplicados, guardar versión limpia
         if (cleanedCart.length !== parsedCart.length) {
           localStorage.setItem(`cart_${savedUser.email}`, JSON.stringify(cleanedCart));
         }
@@ -75,7 +69,6 @@ export default function CheckoutPage() {
     }
   }, []);
 
-  // 💰 total
   const getTotal = () => {
     return cart.reduce(
       (total, item) => total + item.price * item.quantity,
@@ -83,7 +76,6 @@ export default function CheckoutPage() {
     );
   };
 
-  // 🧠 VALIDACIÓN
   const validateCard = () => {
     if (cardNumber.length !== 16) return 'Número inválido';
     if (!name.trim()) return 'Nombre requerido';
@@ -93,7 +85,6 @@ export default function CheckoutPage() {
     return '';
   };
 
-  // 🧾 PAGO
   const handlePay = async () => {
     if (!user.email) {
       alert('Debes iniciar sesión');
@@ -110,7 +101,9 @@ export default function CheckoutPage() {
 
     setError('');
 
-    await fetch('http://localhost:3001/orders', {
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://ecom-production-d108.up.railway.app';
+
+    await fetch(`${API_URL}/orders`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -122,13 +115,11 @@ export default function CheckoutPage() {
 
     alert('Pago exitoso 🎉');
 
-    // 🔥 limpiar carrito SOLO del usuario
     localStorage.removeItem(`cart_${user.email}`);
 
     window.location.href = '/orders';
   };
 
-  // 📝 Formatear tipologia para mostrar
   const formatTipologia = (tipologia?: string) => {
     if (!tipologia) return null;
     switch(tipologia) {
@@ -149,17 +140,15 @@ export default function CheckoutPage() {
     >
       <h1>💳 Checkout</h1>
 
-      {/* 🛒 RESUMEN */}
       <div style={{ marginBottom: '20px' }}>
         <h2>Resumen</h2>
 
         {cart.length === 0 ? (
           <p>Carrito vacío</p>
         ) : (
-          // ✅ CORREGIDO: key única usando ID + tipología
           cart.map((item) => (
             <div 
-              key={getItemKey(item)}  // 👈 CLAVE ÚNICA
+              key={getItemKey(item)}
               style={{
                 borderBottom: '1px solid #eee',
                 padding: '8px 0',
@@ -186,7 +175,6 @@ export default function CheckoutPage() {
         <h3>Total: ${getTotal().toLocaleString()}</h3>
       </div>
 
-      {/* 💳 TARJETA */}
       <div
         style={{
           border: '1px solid #ccc',
@@ -196,7 +184,6 @@ export default function CheckoutPage() {
       >
         <h2>Datos de pago</h2>
 
-        {/* 🧾 Número */}
         <input
           placeholder="Número de tarjeta"
           value={cardNumber}
@@ -213,7 +200,6 @@ export default function CheckoutPage() {
           }}
         />
 
-        {/* 👤 Nombre */}
         <input
           placeholder="Nombre en la tarjeta"
           value={name}
@@ -227,7 +213,6 @@ export default function CheckoutPage() {
           }}
         />
 
-        {/* 📅 + CVV */}
         <div style={{ display: 'flex', gap: '10px' }}>
           <input
             placeholder="MM/YY"
@@ -247,14 +232,12 @@ export default function CheckoutPage() {
           />
         </div>
 
-        {/* ❌ ERROR */}
         {error && (
           <p style={{ color: 'red', marginTop: '10px' }}>
             {error}
           </p>
         )}
 
-        {/* 💳 BOTÓN */}
         <button
           onClick={handlePay}
           style={{

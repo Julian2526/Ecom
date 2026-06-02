@@ -1,0 +1,9 @@
+cat > vercel.json << 'EOF'
+{
+  "projects": {
+    "frontend": {
+      "root": "frontend"
+    }
+  }
+}
+EOF

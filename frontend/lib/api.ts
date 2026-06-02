@@ -1,4 +1,3 @@
-cat > lib/api.ts << 'EOF'
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://ecom-production-d108.up.railway.app';
 
 export const api = {
@@ -9,4 +8,3 @@ export const api = {
   orders: `${API_URL}/orders`,
   orderByEmail: (email: string) => `${API_URL}/orders/${email}`,
 };
-EOF
